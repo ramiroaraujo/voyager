@@ -92,6 +92,36 @@ class MultipleImage extends BaseType
                                     }
                                 }
                             )->encode($file->getClientOriginalExtension(), $resize_quality);
+                    } elseif (isset($thumbnails->resize)) {
+                        $thumb_resize_width = null;
+                        $thumb_resize_height = null;
+
+                        if (isset($thumbnails->resize->width) || isset($thumbnails->resize->height)) {
+                            if (isset($thumbnails->resize->width)) {
+                                $thumb_resize_width = $thumbnails->resize->width;
+                            }
+                            if (isset($thumbnails->resize->height)) {
+                                $thumb_resize_height = $thumbnails->resize->height;
+                            }
+                        } else {
+                            $thumb_resize_width = $image->width();
+                            $thumb_resize_height = $image->height();
+                        }
+
+                        $resize_quality = isset($this->options->quality) ? intval($this->options->quality) : 75;
+
+                        $image = InterventionImage::make($file)
+                            ->orientate()
+                            ->resize(
+                                $thumb_resize_width,
+                                $thumb_resize_height,
+                                function (Constraint $constraint) {
+                                    $constraint->aspectRatio();
+                                    if (isset($this->options->upsize) && !$this->options->upsize) {
+                                        $constraint->upsize();
+                                    }
+                                }
+                            )->encode($file->getClientOriginalExtension(), $resize_quality);
                     } elseif (isset($this->options->thumbnails) && isset($thumbnails->crop->width) && isset($thumbnails->crop->height)) {
                         $crop_width = $thumbnails->crop->width;
                         $crop_height = $thumbnails->crop->height;
